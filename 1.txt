@@ -1,0 +1,29 @@
+
+1. uboot就是一个bootloader，作用就是用于启动Linux或其他系统。
+	Uboot最主要的工作就是初始化DDR。因为Linux是运行在DDR里面的。一般Linux镜像zImage(uImage)+设备树(.dtb)存放在SD、EMMC、NAND、SPI FLASH等等外置存储区域。
+	这里就牵扯到一个问题，需要将Linux镜像从外置flash拷贝到DDR中，再去启动。	Uboot的主要目的就是为系统的启动做准备。
+
+2. Uboot获取
+	1、首先就是uboot官网。缺点就是支持少，比如某一款具体芯片驱动等不完善。
+	2、SOC厂商会从uboot官网下载某一个版本的uboot，然后在这个版本的uboot上加入相应的SOC以及驱动。这就是SOC厂商定制版的uboot。NXP官方的I.MX6ULL EVK板子，
+	3、做开发板的厂商，开发板会参考SOC厂商的板子。开发板必然会和官方的板子不一样。因此开发板厂商又会去修改SOC厂商做好的uboot，以适应自己的板子。
+
+3. 为了方便开发，建议直接在uboot顶层Makefile里面设置好ARCH和CORSS_COMPILE这两个变量的值。   
+	编译完成以后就会生成一个u-boot.bin。必须向u-boot.bin添加头部信息。Uboot编译最后会通过/tools/mkimage软件添加头部信息，生成u-boot.imx。    
+	
+	
+4. uboot 目录：
+	文件夹	api	硬件无关的功能函数的API，是uboot本身使用的
+	文件夹	arch	各种CPU架构平台例如：arm .mips. powerpc. x86. riscv .etc.
+	文件夹	board	已经支持的开发板相关文件，板级相关配置文件，针对不同平台的功能下具体的实现
+	文件夹	cmd	实现uboot命令行下支持的命令，每一条命令都对应一个文件。例如bootm命令对应就是bootm.c 而xxx命令，
+		对应do_xxx函数 cmd_process最终会调用cmd_tbl_s结构体中的成员变量cmd函数指针，比如执行xxx命令，最终是会调用你do_xxx函数 uboot源码的cmd文件夹下xxx.c文件对应的是xxx命令
+	文件夹	common	通用启动相关初始化文件，board.r board_init_f的实现common/main.c是整个u-boot程序的主函数，主要负责运行维护uboot的shell命令行 
+	文件夹	configs	各个板卡平台的默认配置文件 make 的时候可以编译使用默认配置比如 make xxx_defconfig 就设置了按照默认配置编译
+	文件夹	disk	与磁盘有关的文件
+	文件夹	doc	文档目录，里面存放了很多uboot相关文档，这些文档可以帮助理解uboot代码。
+	文件夹	drivers	板级的驱动。这里面放的就是从linux源代码中移植过来的linux设备驱动，主要是开发板上必须用到的一些驱动，如网卡驱动、Inand/SD卡、NandFlash等的驱动。
+	文件夹	dts	存放不同开发板的设备树源码文件，目前该目录为空，只有Makefile 和Kconfig
+	文件夹	env	环境相关nand mmc onenand 等的文件
+	文件夹	fs	文件系统相关，linux系统移植而来的
+	文件夹	post	有些需要上电自检程序放在这里 
